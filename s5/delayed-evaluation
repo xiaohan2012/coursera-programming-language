@@ -1,0 +1,25 @@
+#lang racket
+
+; function argument evaluation is eager
+; if condition statement is not eager
+
+(define (factor_normal x)
+  (if (= x 0)
+     1
+     (* x (factor_normal (- x 1)))))
+
+(define (my_if x y z)
+  (if x (y) (z)))
+     
+(define (factor_okay x)
+  (my_if 
+   (= x 0)
+   (lambda () 1)
+   (lambda () (* x (factor_okay (- x 1))))))
+
+; by wrapping a expression with a lambda function, we delay the evaluation of that expression, thus avoided unnecessary computation
+
+; A zero-argument function used to delay evaluation is called a thunk
+
+; As a verb: thunk the expression
+  

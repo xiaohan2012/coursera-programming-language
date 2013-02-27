@@ -1,0 +1,57 @@
+#lang racket
+;use let expressions
+
+(define xs (list 4 3 1 5 6))
+(define (max-of-list xs)
+  (cond
+    [(null? xs) (error "max-of-list being passed empty list ")]
+    [(null? (cdr xs)) (car xs)]
+    [#t (let
+       ([tlans (max-of-list (cdr xs))])
+       (if (> tlans (car xs))
+          tlans
+          (car xs)))]))
+             
+(define max-value (max-of-list xs))
+
+;there are four different ways to use let for four different types of situations
+
+;let's start with the `let`, expressions in 'let' are evaluated from before the let expression
+
+(define (silly-double1 x)
+  (let
+      ([x (+ x 1)]
+       [y (+ x 2)]) ;the x will be the same as the argument passed to silly-double
+    (+ x y -3)))
+
+;let* works the same like ML's let
+(define (silly-double2 x)
+  (let* 
+          ([x (+ x 1)]
+           [y (+ x 2)])
+        (+ x y -4)))
+
+;`letrec` includes all the bindings when evaluating the expressions inside it
+; it is needed for mutual recursion
+; But expressions are still evaluated in order: accessing an uninitialized binding would produce #<undefined>
+
+(define (silly-triple x)
+  (letrec 
+      ([a (+ x 2)]
+       [f (lambda(c) (+ a b c))]
+       [b (+ x 7)])
+    (- (f x) 9)))
+
+
+(define (divisable-by-two1 x)
+  (letrec
+      ([even? (lambda(x) (if (zero? x) #t (odd? (- x 1))))]
+       [odd? (lambda(x) (if (zero? x) #f (even? (- x 1))))])
+    (even? x)))
+    
+; or use `define` directly
+(define (divisable-by-two2 x)
+  (define (even? x) (if (zero? x) #t (odd? (- x 1))))
+  (define (odd? x) (if (zero? x) #f (even? (- x 1))))
+  (even? x))
+       

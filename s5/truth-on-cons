@@ -1,0 +1,28 @@
+#lang racket
+
+; cons actually builds a pair of two elements
+; list is  actually nested pairs, among which the inner most pair's second element is null
+; in other word, lst is a special form of pair
+
+(define pr (cons 1 (cons "feng" #t)))
+(define lst (cons 1 (cons "feng" (cons #t null))))
+
+; try print out pr and lst to see the difference
+
+; car takes the first one in the pair, like (#1 list) in ML
+; cdr takes the second one in the pair, like (#2 list) in ML
+
+
+;try cddr on pr and lst
+
+; lst are both pair and list but pr is just pair
+
+; there is bunch of functions relating to combinations of multiple car and cdr, like caddr, caar, cddr, cdadr
+; 
+
+; list is called proper list more formally
+; pair is called  improper list
+
+; why bother distinguishing between them?
+; it is kinda a convention
+; use proper list for collections of unknown sizes

@@ -1,0 +1,154 @@
+(*
+`is_older` takes two dates and evaluates to true or false. It evaluates to true if
+the first argument is a date that comes before the second argument
+*)
+fun is_older(date1 : int * int * int, date2 : int * int * int)=
+    let
+	val y1 = (#1 date1)
+	val y2 = (#1 date2)
+	val m1 = (#2 date1)
+	val m2 = (#2 date2)
+	val d1 = (#3 date1)
+	val d2 = (#3 date2)
+    in
+	if y1 < y2(*first year older than second year*) 
+	then true
+	else if y1 > y2(*first year less than second year*)
+	then false(*equal year*)
+	else
+	    if m1 < m2(*first month greater than second month*)
+	    then true
+	    else if m1 > m2(* first month less than second month*)
+	    then false
+	    else(*equal month*)
+		if d1 < d2(*first day greater than second day*)
+		then true
+		else false
+    end
+
+(*
+number_in_month takes a list of dates and a month (i.e., an int) and returns how many dates in the list are in the given month.
+*)
+fun number_in_month(dates : (int * int * int) list, month : int)=
+		   if null dates
+		   then 0
+		   else (if (#2 (hd dates)) = month then 1 else 0) + number_in_month(tl dates, month)
+(*
+
+val dates = [(2013,1,20),(2013,1,19),(2012,12,31),(2012,12,30),(2012,11,25)]
+
+val number_in_jan = number_in_month(dates,1)
+val number_in_dec = number_in_month(dates,12)
+val number_in_mar = number_in_month(dates,3)
+*)
+(*
+number_in_months takes a list of dates and a list of months (i.e., an int list) and returns the number of dates in the list of dates that are in any of the months in the list of months. Assume the list of months has no number repeated.
+*)
+fun number_in_months(dates : (int * int * int) list, months : int list) =
+    if null months
+    then
+	0
+    else
+	number_in_month(dates,hd months) + number_in_months(dates, tl months)
+
+(*
+val number_in_jan_dec_mar = number_in_months(dates,[1,12,3])
+*)
+
+(*
+dates_in_month takes a list of dates and a month (i.e., an int) and returns a list holding the dates from the argument list of dates that are in the month. 
+*)
+
+fun dates_in_month(dates : (int * int * int) list, month : int)=
+    if null dates
+    then []
+    else
+	let
+	    val new_month = (#2 (hd dates))
+	    val remaining_months = dates_in_month(tl dates,month)
+	in
+	    if month = new_month
+	    then (hd dates) :: remaining_months
+	    else remaining_months
+	end
+(*
+dates_in_months takes a list of dates and a list of months (i.e., an int list) and returns a list holding the dates from the argument list of dates that are in any of the months in the list of months. Assume the list of months has no number repeated.
+*)
+
+fun dates_in_months(dates : (int * int * int) list, months : int list)=
+    if null months
+    then [] 
+    else dates_in_month(dates,hd months) @ dates_in_months(dates,tl months)
+
+(*
+get_nth that takes a list of strings and an int n and returns the nth element of the list where the head of the list is 1st .
+*)
+fun get_nth(str_list : string list , n : int)=
+    if n = 1
+    then hd str_list
+    else get_nth(tl str_list, n - 1)
+
+fun date_to_string( date : int * int * int) =
+    let
+	val month_idx = (#2 date)
+	val month_str_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    in
+	get_nth(month_str_list, month_idx) ^ " " ^ Int.toString( #3 date) ^ ", " ^ Int.toString(#1 date)    end
+
+val number_str_list = ["one","two","three","four","five"]
+
+(*
+number_before_reaching_sum that takes an int called sum, which you can assume
+is positive, and an int list, which you can assume contains all positive numbers, and returns an int. You should return an int n such that the first n elements of the list add to less than sum, but the first n + 1 elements of the list add to sum or more.
+*) 		   
+fun number_before_reaching_sum(sum : int, xs : int list)=
+    let
+	val cur_val = hd xs
+    in
+	if (sum - cur_val) <= 0
+	then 0
+	else
+	1 + number_before_reaching_sum(sum- cur_val, tl xs)
+    end
+
+
+(*
+what_month takes a day of year (i.e., an int between 1 and 365) and returns what month that day is in (1 for January, 2 for February, etc.). Use a list holding 12 integers and your answer to the previous problem
+*)
+fun what_month(year_day : int) = 
+    let
+	val month_days = [31,28,31,30,31,30,31,31,30,31,30,31]
+    in
+	number_before_reaching_sum(year_day,month_days) + 1
+    end
+
+(*
+month_range that takes two days of the year day1 and day2 and returns an int list [m1,m2,...,mn] where m1 is the month of day1, m2 is the month of day1+1, ..., and mn is the month of day day2.
+*)
+
+fun month_range(yd1 : int, yd2 : int) = 
+    if yd1 > yd2
+    then []
+    else if yd1 = yd2
+    then
+	what_month(yd1) :: []
+    else
+	what_month(yd1) :: month_range(yd1 + 1, yd2)
+
+(*
+oldest takes a list of dates and evaluates to an (int*int*int) option. Itevaluates to NONE if the list has no dates and SOME d if the date d is the oldest date in the list.
+*)
+fun oldest(ds : (int * int * int) list) =
+    if null ds
+    then NONE
+    else if null (tl ds)
+    then SOME (hd ds)
+    else 
+	let
+	    val d1 = hd ds
+	    val oldest_d = (valOf (oldest(tl ds)))
+	in
+	    if is_older(d1, oldest_d)
+	    then SOME d1
+	    else SOME oldest_d
+	end

@@ -1,0 +1,12 @@
+#lang racket
+
+; like ML, Racket can back reference bindings
+; unlike ML, Racket can also forward reference bindings, unless the referred bindings are in the function body
+
+(define x 1)
+(define y (+ x 1)) ;back reference ok
+(define (f x) (+ x y z)) ;forward reference, ok
+;(define a (+ x z)) ;not ok, because it is not in the function body
+(define z 2)
+;(define f 5) ; not ok, because of duplicate definition of `f`
+

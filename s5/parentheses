@@ -1,0 +1,12 @@
+#lang racket
+;Racket has amazingly simple syntax
+;the basic construct of the syntax is term
+;term is 
+;1, atomic, like 1 "12" #t #f, anything undividable
+;2, special form, like keyword, lambda, define,..
+;3, a sequence of terms in paren: (t1 t2 ...tn), 
+; note, if t is not a speical form, then it is a function.
+
+;because of this syntax, the syntax tree is easy to get
+;note operator priority is of no need in tree construction
+

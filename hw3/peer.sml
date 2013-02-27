@@ -1,0 +1,155 @@
+(* Coursera Programming Languages, Homework 3 *)
+
+exception NoAnswer
+
+datatype pattern = Wildcard
+		 | Variable of string
+		 | UnitP
+		 | ConstP of int
+		 | TupleP of pattern list
+		 | ConstructorP of string * pattern
+
+datatype valu = Const of int
+	      | Unit
+	      | Tuple of valu list
+	      | Constructor of string * valu
+
+fun g f1 f2 p =
+    let 
+	val r = g f1 f2 
+    in
+	case p of
+	    Wildcard          => f1 ()
+	  | Variable x        => f2 x
+	  | TupleP ps         => List.foldl (fn (p,i) => (r p) + i) 0 ps
+	  | ConstructorP(_,p) => r p
+	  | _                 => 0
+    end
+
+(**** for the challenge problem only ****)
+
+datatype typ = Anything
+	     | UnitT
+	     | IntT
+	     | TupleT of typ list
+	     | Datatype of string
+
+(**** you can put all your code here ****)
+(* 1 *)
+val only_capitals  = List.filter (fn s => Char.isUpper(String.sub(s,0)))
+
+(* 2 *)
+val longest_string1 = foldl (fn (x,y) => if String.size x > String.size y then x else y)  ""
+						 
+(* 3 *)
+val longest_string2 = foldl (fn (x,y) => if String.size (x) >= String.size(y) then x else y) ""
+
+(* 4 *)
+fun longest_string_helper f xs = foldl (fn (x,y) => if f(String.size x, String.size y) then x else y) "" xs
+val longest_string3 = longest_string_helper (fn (x,y) => x > y)
+val longest_string4 = longest_string_helper (fn (x,y) => x >= y)
+
+(* 5 *)
+val longest_capitalized = longest_string1 o only_capitals
+    
+(* 6 *)
+val rev_string = String.concat o List.map Char.toString o rev o String.explode
+				  
+
+(*7*)
+fun first_answer f xs = 
+    case xs of
+	[] => raise NoAnswer
+     | x::xs' => case f x of
+		     SOME v => v
+		   | NONE => first_answer f xs'
+
+(* 8 *)
+fun all_answers f xs =
+    let
+	fun helper (acc,ys) =
+	    case ys of
+		[] => []
+	      | (SOME y)::[] => acc@y
+	      | (SOME y)::ys' => helper(acc@y,ys')
+	val ys = List.map f xs
+    in
+	if List.exists (fn y => not (isSome y)) ys then NONE else SOME (helper ([],ys))
+    end
+(*sample solution*)
+fun all_answer_sample f xs = 
+    let 
+	fun helper (acc,xs) = 
+	    case xs of
+		[] => SOME acc
+	      | x:xs' => case f x of
+			     NONE => NONE
+			   | SOME y => helper (y@acc,xs')
+    in
+	helper ([], xs)
+    end
+
+(* 9 *)
+(* a *)
+val count_wildcards = g (fn () => 1) (fn s => 0)
+(* b *)
+val count_wild_and_variable_lengths = g (fn () => 1) (fn s => String.size s)(*unnecessary function wrapping*)
+(* c *)
+fun count_some_var (s,p) = g (fn () => 0) (fn s' => if s=s' then 1 else 0) p
+
+(* 10 *)
+fun check_pat p = 
+    let
+	fun get_var_strings (p,var_strs) = 
+	    case p of 
+		Variable x => x::var_strs
+	      | TupleP xs => List.foldl (fn (x,xs) => get_var_strings(x,[]) @ xs) var_strs xs
+	      | _ => var_strs
+	fun has_duplicate str_list = 
+	    case str_list of
+		[] => false
+	      | x::xs' => (List.exists (fn s => s=x) xs') orelse has_duplicate xs'
+    in
+	not (has_duplicate (get_var_strings (p, [])))
+    end
+
+fun check_pat_sample pat = 
+    let fun get_vars pat =
+	    case pat of(*without passing in accumulator*)
+		Variable s => [s]
+	      | TupleP ps  => List.foldl (fn (p,vs) => get_vars p @ vs) [] ps
+	      | ConstructorP(_,p) => get_vars p(*I missed the Constructor part*)
+	      | _          => []
+	fun unique xs = 
+	    case xs of
+		[]     => true
+	      | x::xs' => (not (List.exists (fn y => y=x) xs'))
+			  andalso unique xs'
+    in 
+	unique (get_vars pat)
+    end
+
+(* 11 *)
+fun match (v, p) = 
+    case (v,p) of
+	(v,ConstP i) => (case v of
+			     Const j => if i=j then SOME [] else NONE
+			   | _ => NONE)(*duplicate*)
+      | (v, UnitP) => (case v of 
+			   Unit => SOME []
+			 | _ => NONE)(*duplicate*)
+      | (v, ConstructorP(s',p)) => (case v of  
+					Constructor(s,v') => if s=s' then match(v',p) else NONE
+				      | _ => NONE)(*duplicate*)
+      | (t, TupleP p) => (case t of
+			      Tuple t => if List.length(t)=List.length(p) then all_answers (fn (v,p) => match(v,p))(*unnecessary function wrapping*) (ListPair.zip (t,p)) else NONE
+			    | _ => NONE)
+      | (Const i, Variable v) => SOME [(v,Const i)](*simply (_,Variable v))*)
+      | (Tuple t, Variable v) => SOME [(v,Tuple t)]
+      | (_, Variable v) => NONE
+      | (_,Wildcard) => SOME []
+
+
+(* 12 *)
+fun first_match v ps =
+    SOME ((first_answer (fn p => match(v,p)) ps))  handle NoAnswer => NONE

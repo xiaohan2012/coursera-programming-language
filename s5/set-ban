@@ -1,0 +1,34 @@
+#lang racket
+; Racket allows top level binding mutation
+
+(define a 5)
+(define f (lambda (x) (+ x a)))
+(set! a 1) ; mutate a
+(define b (f 1))
+
+; function f assumes a equals to 5
+; however, unexpected things happened
+
+; then following this intuition, value binding is not the only thing we can mutate, function binding can be mutated as well;
+; like + and *(they are functions)
+
+; however, this is not allowed in Racket.
+; In Racket, set! is only allowed for a binding if set! is used in module where the binding is defined
+; and in the module where + and *  is defined, set! is not used
+
+; The work around for the unexpected mutation is make a local copy of the binding used
+; for exmaple
+
+(define x 5)
+(define fun (let 
+                ([c x] ;make a local copy, lambda should be in the let expression in order for the local value binding being evaluated
+                 [+ +]) ;this may be quite surprising, but for the sake of absolute certainty, this is necessary
+              (lambda (y) (+ c y))))
+  
+(set! x 1)
+(define z (fun 1))
+
+; Have you noticed, the code looks quite ugly and cumbersome
+; so the best practise is not using top level mutation 
+
+; Actually Racket makes a compromise between this, allowing top level mutation while restricting uses in certain cases

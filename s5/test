@@ -1,0 +1,25 @@
+#lang racket ;tell  doctor racket this is a racket file
+
+(provide (all-defined-out)) ; this line makes every thing public, this is oppposite to racket's default option, which makes everything in a file/module private
+
+(define s "hello")
+
+; Use Ctrl + E to pop out and off the Interaction Window
+
+(define cube1 
+  (lambda (x) 
+    (* x (* x x))))
+
+(define eight1 (cube1 2))
+
+(define cube2 
+  (lambda (x)
+    (* x x x))) ; * function takes any number of arguments
+
+(define eight2 (cube2 2))
+
+
+(define (cube3 x) ;syntatic sugar in Racket, why?
+  (* x x x))
+
+(define eight3 (cube3 2))

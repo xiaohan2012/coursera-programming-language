@@ -1,0 +1,38 @@
+#lang racket
+; stream is an infinite number of values, like electric current, mouse click, unix pipeline cmd1 | cmd2
+; a powerful idiom to divide labor;
+
+; stream producers are responsible for creating any number of values
+; stream consumers ask for how many values they need
+
+; a stream function that returns the powers of two, 2 4 6 8 16
+; it is implemented using thunk
+; a stream is represented as a pair, the first element and thunk that returns the  rest of the stream
+
+; in this way, the values are gained like the monkey picking the banana one by one
+; it is a little like iterator, xrange in Python, you will be given the value once 
+; 1, you ask for it
+; 2, the value is the next value for you, compared to the last value you asked
+
+(define (stream-maker fn arg)
+  (letrec
+      ([f (lambda (x) (cons x (lambda () (f (fn arg x)))))])
+    (f arg)))
+
+(define (powers-of-two)
+  (stream-maker * 2))
+
+(define (natural-number)
+  (stream-maker + 1))
+
+(define (number-until stream tester) ; given a stream, get the index of the first value in the stream that passes the tester
+  (letrec 
+      ([f (lambda (stream n) 
+            (if (tester (car (stream)))
+               n
+               (f (cdr (stream)) (+ n 1))))])
+    (f stream 1)))
+
+(define five (number-until powers-of-two (lambda (x) (= x 32))))
+
+

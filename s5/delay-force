@@ -1,0 +1,32 @@
+#lang racket
+(define (slow-add x y)
+  (letrec
+      ([helper (lambda (c) 
+                 (if (= c 0)
+                    x
+                    (helper (- c 1))))])
+    (+ y (helper 9999999))))
+
+
+
+(define (multiply x y-lambda)
+  (cond 
+    [(= x 0) 0]
+    [(= x 1) (y-lambda)]
+    [#t (+ (y-lambda) (multiply (- x 1) y-lambda))]))
+
+(define (my-delay e)
+  (mcons #f e)) ; this is a promise. I promise I will give you the result if you ask me
+; the promise is actually a one-of type, function or the result after calling the function
+
+(define (my-force p)
+  (if (mcar p)
+     (mcdr p)
+     (begin
+       (set-mcar! p #t)
+       (set-mcdr! p ((mcdr p)))
+       (mcdr p))))
+
+(define r (multiply 100 (let 
+                          ([p (my-delay (lambda () (slow-add 2 3)))])
+                        (lambda () (my-force p)))))

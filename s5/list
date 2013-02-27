@@ -1,0 +1,30 @@
+#lang racket
+; demo on how to use list in Racket
+
+; use `cons` to construct list
+;(cons 1 (cons 2 (cons 3 null))) for list containing 1,2 and 3
+;or using `list` for simplicity
+;(list 1 2 3)
+
+(define (sum xs) 
+  (if (null? xs) 
+     0
+     (+ (car xs) (sum (cdr xs)))))
+
+; append function
+(define (my-append xs ys)
+  (if (null? xs) 
+     ys
+     (cons (car xs) 
+          (my-append (cdr xs) ys))))
+
+; map function
+(define (my-map f xs)
+  (if (null? xs)
+     null ; or xs
+     (cons (f (car xs)) 
+          (my-map f (cdr xs)))))
+
+
+(define (double x) (* 2 x))
+  
